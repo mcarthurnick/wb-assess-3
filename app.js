@@ -60,7 +60,54 @@ const OTHER_FOSSILS = [
   },
 ];
 
-// TODO: Replace this comment with your code
+app.get('/', (req, res) => {
+  let username = req.session.name
+  if(!req.session.name){
+    res.render('homepage.html.njk', {
+      name: username,
+    })
+  } else {
+    res.redirect('/top-fossils')
+  }
+})
+
+app.get('/get-name', (req, res) => {
+  console.log('req.query.name', req.query.name)
+  req.session.name = req.query.name;
+  if(req.session.name){
+    res.redirect('/top-fossils')
+  } else {
+    res.send('Please login to continue')
+  }
+})
+
+app.get('/top-fossils', (req, res) => {
+  let fossils = []
+  let name = req.session.name;
+  if(!name){
+    res.redirect('/')
+  } else {
+    for(let key in MOST_LIKED_FOSSILS){
+      MOST_LIKED_FOSSILS[key].ID = key
+      fossils.push(MOST_LIKED_FOSSILS[key])
+    }
+    res.render('top-fossils.html.njk', {
+      fossils : fossils,
+      name: name
+    })
+  }
+  
+})
+
+app.post('/like-fossil', (req, res) => {
+  let fossil = "";
+  fossil = req.body.fossil
+  MOST_LIKED_FOSSILS[fossil].num_likes += 1;
+
+  res.render('thank-you.html.njk', {
+    name : req.session.name
+  })
+})
 
 app.get('/random-fossil.json', (req, res) => {
   const randomFossil = lodash.sample(OTHER_FOSSILS);
